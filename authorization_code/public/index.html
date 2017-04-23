@@ -239,65 +239,77 @@
         var playerMode = "init";
 
         function play() {
-            playerMode = "play";
 
-            $.ajax({
-                url: 'https://api.spotify.com/v1/me/player/play',
-                method: "PUT",
-                headers: {
-                    'Authorization': 'Bearer ' + access_token
-                },
-                success: function(response) {
-                    callback(response);
-                }
-            });
+            if (playerMode !== "play") {
+
+                playerMode = "play";
+
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/player/play',
+                    method: "PUT",
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function(response) {
+                        // callback(response);
+                    }
+                });
+            }
         };
 
         function pause() {
 
-            playerMode = "pause";
-            $.ajax({
-                url: 'https://api.spotify.com/v1/me/player/pause',
-                method: "PUT",
-                headers: {
-                    'Authorization': 'Bearer ' + access_token
-                },
-                success: function(response) {
-                    callback(response);
-                }
-            });
+            if (playerMode !== "pause") {
+                playerMode = "pause";
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/player/pause',
+                    method: "PUT",
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function(response) {
+                        // callback(response);
+                    }
+                });
+            }
         };
 
         function next() {
 
-            playerMode = "next";
 
-            $.ajax({
-                url: 'https://api.spotify.com/v1/me/player/next',
-                method: "POST",
-                headers: {
-                    'Authorization': 'Bearer ' + access_token
-                },
-                success: function(response) {
-                    callback(response);
-                }
-            });
+            if (playerMode !== "next") {
+                playerMode = "next";
+
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/player/next',
+                    method: "POST",
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function(response) {
+                        // callback(response);
+                    }
+                });
+            }
         };
 
         function previous() {
 
-            playerMode = "previous";
 
-            $.ajax({
-                url: 'https://api.spotify.com/v1/me/player/previous',
-                method: "POST",
-                headers: {
-                    'Authorization': 'Bearer ' + access_token
-                },
-                success: function(response) {
-                    callback(response);
-                }
-            });
+            if (playerMode !== "previous") {
+                playerMode = "previous";
+
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/player/previous',
+                    method: "POST",
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function(response) {
+                        // callback(response);
+                    }
+                });
+            }
         };
     </script>
     <script>
@@ -413,8 +425,8 @@
     </script>
     <script>
         var rapidMix = window.RapidLib();
-        var myRegression = new rapidMix.Regression();
-
+        // var myRegression = new rapidMix.Regression();
+        var myClassification = new rapidMix.Classification();
         var myTrainingSet = [];
 
         var training = false;
@@ -429,9 +441,37 @@
         var classificationOutput;
 
         function process(input) {
-            regressionOutput = myRegression.process(input);
-            aSlider.value = regressionOutput[0];
-            bSlider.value = regressionOutput[1];
+            // regressionOutput = myRegression.process(input);
+            classificationOutput = myClassification.process(input);
+            classificationOutput
+            console.log(classificationOutput[0]);
+
+            switch (classificationOutput[0]) {
+                case 0:
+                    // rapidOutput = [1];
+                    pause();
+                    break;
+
+                case 1:
+                    // rapidOutput = [1];
+                    play();
+                    break;
+
+                case 2:
+                    // rapidOutput = [2];
+                    pause();
+                    break;
+                case 3:
+                    // rapidOutput = [3];
+                    next();
+                    break;
+                case 4:
+                    // rapidOutput = [4];
+                    previous();
+                    break;
+                default:
+            }
+
 
         }
         ////////////////////////////////////CONTROLS AND INPUT
@@ -456,6 +496,30 @@
         // window.addEventListener('mousemove', getLeapData, false);
         window.addEventListener('keydown', this.check, false);
 
+        window.setInterval(loop, 10);
+
+        function loop() {
+
+            // clock.ticker();
+            // // each of the 16 slices is associated with a slider position.
+            // // to play loop, count through 16 sliders playing the slice associated with its position
+            // if (clock.tick) {
+            //     currentCount++;
+            //     modCount = currentCount % 16;
+            //
+            //
+            // }
+
+            if (training) {
+
+                myClassification.train(myTrainingSet);
+                console.log('regression trained: ');
+                $('#toggle-train').bootstrapToggle('off')
+
+                trained = true;
+                training = false;
+            }
+        }
 
         function check(e) {
             //console.log(e.keyCode);
@@ -488,37 +552,35 @@
                 var rapidOutput;
 
                 switch (playerMode) {
+
+                    case "init":
+                        rapidOutput = [0];
+                        break;
+
                     case "play":
                         rapidOutput = [1];
-                        play();
                         break;
 
                     case "pause":
                         rapidOutput = [2];
-                        pause();
                         break;
+
                     case "next":
                         rapidOutput = [3];
-                        next();
                         break;
+
                     case "previous":
                         rapidOutput = [4];
-                        previous();
                         break;
+
                     default:
                 }
 
-                // playerMode
-
-                // var rapidOutput = [(aSlider.value), (bSlider.value), (cSlider.value), (dSlider.value), (eSlider.value), (fSlider.value), (gSlider.value), (hSlider.value), (iSlider.value), (jSlider.value), (kSlider.value), (lSlider.value), (mSlider.value),
-                //     (nSlider.value), (oSlider.value), (pSlider.value), (stepsSlider.value), (speedSlider.value), (cfSlider.value), (qSlider.value), (lfoSlider.value), (lfoAmountSlider.value), (volSlider.value), (mvSlider.value)
-                // ];
                 myTrainingSet.push({
                     input: rapidInput,
                     output: rapidOutput
                 });
 
-                // console.log(rapidInput);
             }
 
             if (runState) {
