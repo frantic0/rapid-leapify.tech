@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Example of the Authorization Code flow with Spotify</title>
+    <title>4NVIL H4CK 3 - RAPID_LEAPIFY</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <style type="text/css">
         #login,
@@ -35,7 +35,7 @@
         <canvas></canvas>
 
         <div id="login">
-            <h1>This is an example of the Authorization Code flow</h1>
+            <h1>4NV1L H4CK 3 - RAPID_LEAPIFY</h1>
             <a href="/login" class="btn btn-primary">Log in with Spotify</a>
         </div>
 
@@ -50,7 +50,7 @@
 
 
 
-        <div id="container_machine_learning_controls" style="position: relative; top: 80px; left: 0px;">
+        <div id="container_machine_learning_controls" style="position: relative; top: 40%; left: 0%;">
             <h4>Machine Learning controls</h4>
             <div>
                 <input id="toggle-record" type="checkbox" type="checkbox" data-toggle="toggle" data-width="140" data-height="70" checked data-toggle="toggle" data-on="<span>&#9711;</span> RECORDING" data-off="<span>&#9711;</span> RECORD" data-onstyle="danger" data-style="fast">
@@ -59,18 +59,18 @@
             </div>
         </div>
 
-        <div id="container_spotify_control_buttons" style="position: relative; top: 70px; left: 600px;">
+        <div id="container_spotify_control_buttons" style="position: absolute; top: 420px; left: 655px;">
             <label class="radio-inline"><input type="radio" name="optradio" onClick="play()">Play</label>
             <label class="radio-inline"><input type="radio" name="optradio" onClick="pause()">Pause</label>
             <label class="radio-inline"><input type="radio" name="optradio" onClick="next()">Next</label>
             <label class="radio-inline"><input type="radio" name="optradio" onClick="previous()">Previous</label>
         </div>
 
-        <div id="container_spotify" style="position: relative; top: 80px; left: 600px;">
+        <div id="container_spotify" style="position: absolute; top: 450px; left: 650px;">
             <iframe src="https://open.spotify.com/embed?uri=spotify:user:spotify:playlist:3rgsDhGHZxZ9sB9DQWQfuf" width="600" height="100" frameborder="0" allowtransparency="true"></iframe>
         </div>
 
-        <div id="container_leap_protocol">
+        <div id="container_leap_protocol" tyle="position: absolute; top: 600px; left: 650px;">
             <h4>Sensor Data (Leap Motion)</h4>
             <div id="main">
                 <h6>Frame data:</h6>
@@ -209,13 +209,22 @@
                             userProfilePlaceholder.innerHTML = userProfileTemplate(response);
 
                             $('#login').hide();
+                            $('#container_machine_learning_controls').show();
+                            $('#container_leap_protocol').show();
+                            $('#container_spotify_control_buttons').show();
                             $('#loggedin').show();
+                            $('#container_spotify').show();
+
                         }
                     });
                 } else {
                     // render initial screen
                     $('#login').show();
+                    $('#container_machine_learning_controls').hide();
+                    $('#container_leap_protocol').hide();
+                    $('#container_spotify_control_buttons').hide();
                     $('#loggedin').hide();
+                    $('#container_spotify').hide();
                 }
 
                 document.getElementById('obtain-new-token').addEventListener('click', function() {
