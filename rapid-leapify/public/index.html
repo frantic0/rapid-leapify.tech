@@ -1,0 +1,632 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>4NVIL H4CK 3 - RAPID_LEAPIFY</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <style type="text/css">
+        #login,
+        #loggedin {
+            display: none;
+        }
+
+        .text-overflow {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 500px;
+        }
+
+        canvas {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <canvas></canvas>
+
+        <div id="login">
+            <h1>4NV1L H4CK 3 - RAPID_LEAPIFY</h1>
+            <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+        </div>
+
+
+        <div id="loggedin">
+            <div id="user-profile">
+            </div>
+            <div id="oauth">
+            </div>
+            <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
+        </div>
+
+
+
+        <div id="container_machine_learning_controls" style="position: relative; top: 40%; left: 0%;">
+            <h4>Machine Learning controls</h4>
+            <div>
+                <input id="toggle-record" type="checkbox" type="checkbox" data-toggle="toggle" data-width="140" data-height="70" checked data-toggle="toggle" data-on="<span>&#9711;</span> RECORDING" data-off="<span>&#9711;</span> RECORD" data-onstyle="danger" data-style="fast">
+                <input id="toggle-train" type="checkbox" data-width="140" data-height="70" checked data-toggle="toggle" data-on="<span>&#9634;</span>  TRAINING" data-off="<span>&#9634;</span>  TRAIN" data-style="fast" data-onstyle="warning">
+                <input id="toggle-run" type="checkbox" data-width="140" data-height="70" checked data-toggle="toggle" data-on="<span>&#9655;</span> RUNNING" data-off="<span>&#9655;</span> RUN" data-style="fast" data-onstyle="success">
+            </div>
+        </div>
+
+        <div id="container_spotify_control_buttons" style="position: absolute; top: 420px; left: 655px;">
+            <label class="radio-inline"><input type="radio" name="optradio" onClick="play()">Play</label>
+            <label class="radio-inline"><input type="radio" name="optradio" onClick="pause()">Pause</label>
+            <label class="radio-inline"><input type="radio" name="optradio" onClick="next()">Next</label>
+            <label class="radio-inline"><input type="radio" name="optradio" onClick="previous()">Previous</label>
+        </div>
+
+        <div id="container_spotify" style="position: absolute; top: 450px; left: 650px;">
+            <iframe src="https://open.spotify.com/embed?uri=spotify:user:spotify:playlist:3rgsDhGHZxZ9sB9DQWQfuf" width="600" height="100" frameborder="0" allowtransparency="true"></iframe>
+        </div>
+
+        <div id="container_leap_protocol" tyle="position: absolute; top: 650px; left: 650px;">
+            <h4>Sensor Data (Leap Motion)</h4>
+            <div id="main">
+                <h6>Frame data:</h6>
+                <div id="frameData"></div>
+                <div style="clear:both;"></div>
+                <br>
+
+                <div id="handData">
+                    <h6>Hand data:</h6>
+                    <div id="handBlocks">
+                        <div id="handData0" class="block_leap_info"></div>
+                        <div id="handData1" class="block_leap_info"></div>
+                    </div>
+                </div>
+                <br>
+
+                <div id="pointableData">
+                    <h6>Finger data:</h6>
+                    <div>
+                        <div id="pointableData1" class="block_leap_info"></div>
+                        <div id="pointableData2" class="block_leap_info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script id="user-profile-template" type="text/x-handlebars-template">
+        <h1>Logged in as {{display_name}}</h1>
+        <div class="media">
+            <div class="pull-left">
+                <img class="media-object" width="150" src="{{images.0.url}}" />
+            </div>
+            <div class="media-body">
+                <dl class="dl-horizontal">
+                    <dt>Display name</dt>
+                    <dd class="clearfix">{{display_name}}</dd>
+                    <dt>Id</dt>
+                    <dd>{{id}}</dd>
+                    <dt>Email</dt>
+                    <dd>{{email}}</dd>
+                    <dt>Spotify URI</dt>
+                    <dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
+                    <dt>Link</dt>
+                    <dd><a href="{{href}}">{{href}}</a></dd>
+                    <dt>Profile Image</dt>
+                    <dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>
+                    <dt>Country</dt>
+                    <dd>{{country}}</dd>
+                </dl>
+            </div>
+            <!-- style="position: relative; top: 90px; left: 0px;" -->
+
+        </div>
+
+
+    </script>
+
+    <script id="oauth-template" type="text/x-handlebars-template">
+        <h2>oAuth info</h2>
+        <dl class="dl-horizontal">
+            <dt>Access token</dt>
+            <dd class="text-overflow">{{access_token}}</dd>
+            <dt>Refresh token</dt>
+            <dd class="text-overflow">{{refresh_token}}></dd>
+        </dl>
+    </script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-toggle.min.js"></script>
+    <link href="css/bootstrap-toggle.min.css" rel="stylesheet">
+
+    <script src="js/RapidLib.js"></script>
+
+    <script src="js/three.min.js"></script>
+    <script src="js/leap-0.6.4.min.js"></script>
+    <script src="js/leap-plugins-0.1.12.min.js"></script>
+    <script src="js/leap-plugins-0.1.12-utils.min.js"></script>
+    <script src="js/leap-widgets-0.1.0.min.js"></script>
+    <script src="js/leap.rigged-hand-0.1.7.min.js"></script>
+
+    <script>
+        var access_token;
+
+        (function() {
+
+            /**
+             * Obtains parameters from the hash of the URL
+             * @return Object
+             */
+            function getHashParams() {
+                var hashParams = {};
+                var e, r = /([^&;=]+)=?([^&;]*)/g,
+                    q = window.location.hash.substring(1);
+                while (e = r.exec(q)) {
+                    hashParams[e[1]] = decodeURIComponent(e[2]);
+                }
+                return hashParams;
+            }
+
+            var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+                userProfileTemplate = Handlebars.compile(userProfileSource),
+                userProfilePlaceholder = document.getElementById('user-profile');
+
+            var oauthSource = document.getElementById('oauth-template').innerHTML,
+                oauthTemplate = Handlebars.compile(oauthSource),
+                oauthPlaceholder = document.getElementById('oauth');
+
+            var params = getHashParams();
+
+            access_token = params.access_token;
+
+            var refresh_token = params.refresh_token,
+                error = params.error;
+
+            if (error) {
+                alert('There was an error during the authentication');
+            } else {
+                if (access_token) {
+                    // render oauth info
+                    oauthPlaceholder.innerHTML = oauthTemplate({
+                        access_token: access_token,
+                        refresh_token: refresh_token
+                    });
+
+                    $.ajax({
+                        url: 'https://api.spotify.com/v1/me',
+                        headers: {
+                            'Authorization': 'Bearer ' + access_token
+                        },
+                        success: function(response) {
+                            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+                            $('#login').hide();
+                            $('#container_machine_learning_controls').show();
+                            $('#container_leap_protocol').show();
+                            $('#container_spotify_control_buttons').show();
+                            $('#loggedin').show();
+                            $('#container_spotify').show();
+
+                        }
+                    });
+                } else {
+                    // render initial screen
+                    $('#login').show();
+                    $('#container_machine_learning_controls').hide();
+                    $('#container_leap_protocol').hide();
+                    $('#container_spotify_control_buttons').hide();
+                    $('#loggedin').hide();
+                    $('#container_spotify').hide();
+                }
+
+                document.getElementById('obtain-new-token').addEventListener('click', function() {
+                    $.ajax({
+                        url: '/refresh_token',
+                        data: {
+                            'refresh_token': refresh_token
+                        }
+                    }).done(function(data) {
+                        access_token = data.access_token;
+                        oauthPlaceholder.innerHTML = oauthTemplate({
+                            access_token: access_token,
+                            refresh_token: refresh_token
+                        });
+                    });
+                }, false);
+            }
+        })();
+    </script>
+    <script>
+        var playerMode = "init";
+
+        function play() {
+
+            if (playerMode !== "play") {
+                playerMode = "play";
+
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/player/play',
+                    method: "PUT",
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function(response) {
+                        // callback(response);
+                    }
+                });
+            }
+        };
+
+        function pause() {
+
+            if (playerMode !== "pause") {
+                playerMode = "pause";
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/player/pause',
+                    method: "PUT",
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function(response) {
+                        // callback(response);
+                    }
+                });
+            }
+        };
+
+        function next() {
+
+            playerMode = "next";
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/me/player/next',
+                method: "POST",
+                headers: {
+                    'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response) {
+                    // callback(response);
+                }
+            });
+        };
+
+        function previous() {
+
+            playerMode = "previous";
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/me/player/previous',
+                method: "POST",
+                headers: {
+                    'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response) {
+                    // callback(response);
+                }
+            });
+        };
+    </script>
+    <script>
+        var mode = 'stop';
+
+        var noUiSlider, Leap;
+
+        var frameData = document.getElementById('frameData');
+        var handData = document.getElementById('handData');
+        var handBlocks = document.getElementById('handBlocks');
+        var handData0 = document.getElementById('handData0');
+        var handData1 = document.getElementById('handData1');
+        var pointableData = document.getElementById('pointableData');
+        var slider = document.getElementById('slider');
+
+        // Setup Leap loop with frame callback function
+        var controllerOptions = {
+            background: true,
+            enableGestures: false
+        };
+
+        function vectorToString(vector, digits) {
+            if (typeof digits === "undefined") {
+                digits = 1;
+            }
+            return "(" + vector[0].toFixed(digits) + ", " + vector[1].toFixed(digits) + ", " + vector[2].toFixed(digits) + ")";
+        }
+
+        var backgroundData = [1.0, 1.0, 1.0];
+        var hand1direction = backgroundData;
+        var hand2direction = backgroundData;
+
+
+        Leap.loop(controllerOptions, function(frame) {
+
+            var frameString = "Frame ID: " + frame.id + "<br />" + "Timestamp: " + frame.timestamp + " &micro;s<br />" + "Hands: " + frame.hands.length + "<br />" + "Fingers: " + frame.fingers.length + "<br />";
+
+            frameData.innerHTML = frameString;
+
+            var handString = "";
+            if (frame.hands.length > 0) {
+                for (var i = 0; i < frame.hands.length; i++) {
+
+                    var hand = frame.hands[i];
+
+                    handString += "<div id=&quot;handData" + i + "&quot; class=&quot;block_leap_info&quot;></div>";
+                    handString += "Hand ID: " + hand.id + "<br />";
+                    handString += "Direction: " + vectorToString(hand.direction, 2) + "<br />";
+                    handString += "Palm normal: " + vectorToString(hand.palmNormal, 2) + "<br />";
+                    handString += "Palm position: " + vectorToString(hand.palmPosition) + " mm<br />";
+                    handString += "Palm velocity: " + vectorToString(hand.palmVelocity) + " mm/s<br />";
+                    handString += "Sphere center: " + vectorToString(hand.sphereCenter) + " mm<br />";
+                    handString += "Sphere radius: " + hand.sphereRadius.toFixed(1) + " mm<br />";
+
+                    // Quick and dirty hack
+                    if (i === 0) {
+                        hand1direction = hand.direction;
+
+                        // handData1.innerHTML = handString;
+                        // handString = "";
+                    } else {
+                        hand2direction = hand.direction;
+                        // handData2.innerHTML = handString;
+                    }
+                }
+                handData.style.visibility = "visible";
+            } else {
+                hand1direction = backgroundData;
+                hand2direction = backgroundData;
+                handData.style.visibility = "hidden";
+            }
+
+            // console.log(hand1direction);
+
+            handBlocks.innerHTML = handString;
+
+
+            // Display Pointable (finger) object data
+            var pointableString = "";
+            if (frame.pointables.length > 0) {
+                for (var i = 0; i < frame.pointables.length; i++) {
+                    var pointable = frame.pointables[i];
+
+                    // pointableString += "Pointable ID: " + pointable.id + "<br />";
+                    // pointableString += "Belongs to hand with ID: " + pointable.handId + "<br />";
+                    pointableString += "Length: " + pointable.length.toFixed(1) + " mm<br />";
+                    pointableString += "Width: " + pointable.width.toFixed(1) + " mm<br />";
+                    pointableString += "Direction: " + vectorToString(pointable.direction, 2) + "<br />";
+                    pointableString += "Tip position: " + vectorToString(pointable.tipPosition) + " mm<br />";
+                    pointableString += "Tip velocity: " + vectorToString(pointable.tipVelocity) + " mm/s<br />";
+                }
+                pointableData.style.visibility = "visible";
+            } else {
+                pointableData.style.visibility = "hidden";
+            }
+            pointableData.innerHTML = pointableString;
+
+
+            // console.log("getLeap");
+
+            getLeapData();
+        });
+
+        (window.controller = new Leap.Controller({
+                background: true
+            }).use('playback', {
+                loop: false,
+                pauseHotkey: false,
+                pauseOnHand: false
+            })
+            .use('riggedHand')
+            .connect());
+    </script>
+    <script>
+        var rapidMix = window.RapidLib();
+        // var myRegression = new rapidMix.Regression();
+        var myClassification = new rapidMix.Classification();
+        var myTrainingSet = [];
+
+        var training = false;
+        var trained = false;
+
+        function trainMe() {
+
+            training = true;
+        }
+
+        var regressionOutput;
+        var classificationOutput;
+
+        function process(input) {
+            // regressionOutput = myRegression.process(input);
+            classificationOutput = myClassification.process(input);
+            classificationOutput
+            console.log(classificationOutput[0]);
+
+            switch (classificationOutput[0]) {
+                case 0:
+                    // rapidOutput = [1];
+                    pause();
+                    break;
+
+                case 1:
+                    // rapidOutput = [1];
+                    play();
+                    break;
+
+                case 2:
+                    // rapidOutput = [2];
+                    pause();
+                    break;
+                case 3:
+                    // rapidOutput = [3];
+                    next();
+                    break;
+                case 4:
+                    // rapidOutput = [4];
+                    previous();
+                    break;
+                default:
+            }
+
+
+        }
+        ////////////////////////////////////CONTROLS AND INPUT
+
+        // This is where we are going to store the mouse information
+        var mouseX;
+        var mouseY;
+        var myOutput = '(use number keys)';
+
+        // This gets a reference to the canvas in the browser
+        var canvas = document.querySelector("canvas");
+
+        // This sets the width and height to the document window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 150;
+        // Be aware that when you resize the window, you will need to call (do) this again
+
+        // This creates a 2d drawing 'context' in your canvas
+        // All your drawing will be done in this canvas
+        // var context = canvas.getContext("2d");
+        //This tells the browser to get the mouse information from the function we've called getMouse
+        // window.addEventListener('mousemove', getLeapData, false);
+        window.addEventListener('keydown', this.check, false);
+
+        window.setInterval(loop, 10);
+
+        function loop() {
+
+            // clock.ticker();
+            // // each of the 16 slices is associated with a slider position.
+            // // to play loop, count through 16 sliders playing the slice associated with its position
+            // if (clock.tick) {
+            //     currentCount++;
+            //     modCount = currentCount % 16;
+            //
+            //
+            // }
+
+            if (training) {
+
+                myClassification.train(myTrainingSet);
+                console.log('regression trained: ');
+                $('#toggle-train').bootstrapToggle('off')
+
+                trained = true;
+                training = false;
+            }
+        }
+
+        function check(e) {
+            //console.log(e.keyCode);
+            switch (e.keyCode) {
+                case 88:
+                    togRecord();
+                    break;
+                case 82:
+                    togRun();
+                    break;
+                case 84:
+                    trainMe();
+                    break;
+                default:
+                    myOutput = e.keyCode - 48;
+            }
+        }
+
+        $('#toggle-record').bootstrapToggle('off')
+        $('#toggle-train').bootstrapToggle('off')
+        $('#toggle-run').bootstrapToggle('off')
+
+        function getLeapData() {
+            // console.log(this.hand1direction);
+            // console.log(this.hand2direction);
+
+            if (recordState) {
+
+                var rapidInput = [this.hand1direction[0], this.hand1direction[1], this.hand1direction[2]];
+                var rapidOutput;
+
+                switch (playerMode) {
+
+                    case "init":
+                        rapidOutput = [0];
+                        break;
+
+                    case "play":
+                        rapidOutput = [1];
+                        break;
+
+                    case "pause":
+                        rapidOutput = [2];
+                        break;
+
+                    case "next":
+                        rapidOutput = [3];
+                        break;
+
+                    case "previous":
+                        rapidOutput = [4];
+                        break;
+
+                    default:
+                }
+
+                myTrainingSet.push({
+                    input: rapidInput,
+                    output: rapidOutput
+                });
+
+            }
+
+            if (runState) {
+                console.log("RUNNING");
+                var rapidInput = [this.hand1direction[0], this.hand1direction[1], this.hand1direction[2]];
+                process(rapidInput);
+            }
+        }
+
+        $("#toggle-record").on("change", function() {
+            togRecord();
+        })
+
+        $("#toggle-train").on("change", function() {
+            if (!training) {
+                setTimeout(function() {
+                    training = true;
+                }, 500);
+            }
+        })
+
+        $("#toggle-run").on("change", function() {
+            togRun();
+        })
+
+        var recordState;
+
+        function togRecord() {
+            recordState = !recordState;
+            if (recordState) {
+                console.log("recording!");
+            } else {
+                console.log("stopped recording");
+
+            }
+        }
+
+        var runState;
+
+        function togRun() {
+            runState = !runState;
+            console.log("running");
+        }
+    </script>
+</body>
+
+</html>
